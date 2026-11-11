@@ -1,0 +1,288 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ranking IA no Comex</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: coluna única no celular; em telas largas, calculadora à esquerda e ranking à direita. Placar de horas devolvidas pela IA. */
+:root{
+  --bg:#F2F2F2; --surface:#FFFFFF; --surface-2:#E4EDEC; --line:#D3DEDC;
+  --fg:#000D0C; --muted:#4E6A68; --accent:#025951; --accent-deep:#012626; --glow:#07F2DB; --on-glow:#000D0C;
+  --gold:#B07800; --silver:#5F7270; --bronze:#9A5A2E;
+  --f-display:"Space Grotesk","Inter",system-ui,sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#000D0C; --surface:#012626; --surface-2:#023B37; --line:#0E4744;
+  --fg:#F2F2F2; --muted:#9DBAB6; --accent:#07F2DB; --accent-deep:#F2F2F2; --glow:#07F2DB; --on-glow:#000D0C;
+  --gold:#F2C94C; --silver:#B9CBC9; --bronze:#E0A070; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000D0C; --surface:#012626; --surface-2:#023B37; --line:#0E4744;
+  --fg:#F2F2F2; --muted:#9DBAB6; --accent:#07F2DB; --accent-deep:#F2F2F2; --glow:#07F2DB; --on-glow:#000D0C;
+  --gold:#F2C94C; --silver:#B9CBC9; --bronze:#E0A070; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+p{margin:0}
+.eyebrow{font-size:.78rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--muted)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header{padding-block:32px 24px;display:flex;flex-direction:column;gap:10px}
+header h1{font-size:clamp(2rem,6vw,3.1rem);font-weight:700;letter-spacing:-.02em}
+header h1 span{color:var(--accent)}
+header p{max-width:62ch;color:var(--muted)}
+
+.totals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px}
+.total{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.total b{font-family:var(--f-display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.total small{color:var(--muted);font-size:.8rem}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;padding-block:8px 40px}
+@media (min-width:960px){.grid{grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:start}}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.card h2{font-size:1.45rem}
+form{display:flex;flex-direction:column;gap:14px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+label{display:flex;flex-direction:column;gap:6px;font-size:.88rem;font-weight:600;min-width:0}
+label small{font-weight:400;color:var(--muted)}
+input,select,textarea{font:inherit;font-size:1rem;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:70px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+
+.result{background:var(--accent-deep);color:var(--bg);border-radius:16px;padding:18px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.result div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.result b{font-family:var(--f-display);font-size:1.7rem;font-variant-numeric:tabular-nums;color:var(--glow)}
+:root[data-theme="dark"] .result b{color:var(--on-glow)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .result b{color:var(--on-glow)}}
+.result small{font-size:.78rem;opacity:.85}
+.level{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.92rem;padding:6px 12px;border-radius:999px;background:var(--surface-2);color:var(--accent);align-self:flex-start}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-weight:700;text-decoration:none;border-radius:12px;padding:12px 18px;border:0;cursor:pointer}
+.btn-primary{background:var(--glow);color:var(--on-glow)}
+.btn-ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn[aria-disabled="true"]{opacity:.5;pointer-events:none}
+.note{font-size:.85rem;color:var(--muted)}
+.copybox{font-size:.88rem;background:var(--surface-2);border-radius:10px;padding:10px 12px;white-space:pre-wrap;word-break:break-word}
+
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.place{border:1px solid var(--line);border-radius:14px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;gap:4px;min-width:0;background:var(--bg)}
+.place .pos{font-family:var(--f-display);font-weight:700;font-size:1.9rem}
+.place:nth-child(1) .pos{color:var(--gold)} .place:nth-child(2) .pos{color:var(--silver)} .place:nth-child(3) .pos{color:var(--bronze)}
+.place .who{font-weight:700;overflow-wrap:anywhere}
+.place .hrs{font-family:var(--f-display);font-size:1.2rem;font-variant-numeric:tabular-nums;color:var(--accent)}
+ol.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+ol.list li{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 4px;border-top:1px solid var(--line)}
+ol.list .n{font-family:var(--f-display);font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+ol.list .t{display:flex;flex-direction:column;min-width:0}
+ol.list .t b{overflow-wrap:anywhere}
+ol.list .t small{color:var(--muted);overflow-wrap:anywhere}
+ol.list .h{font-family:var(--f-display);font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent);text-align:right}
+.empty{border:1px dashed var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:8px;text-align:center;align-items:center}
+.empty b{font-family:var(--f-display);font-size:1.2rem}
+
+.levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.levels div{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88rem;display:flex;flex-direction:column;gap:2px}
+.levels b{font-family:var(--f-display)}
+footer{border-top:1px solid var(--line);padding-block:20px 32px;color:var(--muted);font-size:.85rem}
+@media (max-width:520px){.totals,.result{grid-template-columns:minmax(0,1fr)}.podium{grid-template-columns:minmax(0,1fr)}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Ciclo do Saber · Depois do workshop</div>
+  <h1>Quanto tempo a IA <span>te devolveu?</span></h1>
+  <p>Escolha uma tarefa do seu dia a dia no comércio exterior, anote quanto tempo levava à mão e quanto leva com IA, e entre no ranking da turma. Vale e-mail a fornecedor, conferência de documentos, status ao cliente, pesquisa de NCM, relatórios.</p>
+  <div class="totals" aria-label="Resumo da turma">
+    <div class="total"><b id="t-horas">0 h</b><small>devolvidas por mês à turma</small></div>
+    <div class="total"><b id="t-pessoas">0</b><small>registros no ranking</small></div>
+    <div class="total"><b id="t-media">0 min</b><small>ganho médio por tarefa</small></div>
+  </div>
+</header>
+
+<div class="grid">
+  <section class="card" aria-labelledby="calc-title">
+    <h2 id="calc-title">Registre sua conquista</h2>
+    <form id="calc" novalidate>
+      <label for="f-nome">Como quer aparecer no ranking <small>Nome ou apelido</small>
+        <input id="f-nome" name="nome" autocomplete="nickname" maxlength="40" placeholder="Ex.: Ana · Importação">
+      </label>
+      <label for="f-empresa">Empresa <small>Opcional</small>
+        <input id="f-empresa" name="empresa" maxlength="60" placeholder="Ex.: Trading Vitória">
+      </label>
+      <label for="f-tarefa">Tarefa
+        <select id="f-tarefa" name="tarefa">
+          <option>E-mail a fornecedor ou agente</option>
+          <option>Conferência de documentos (invoice, packing, BL)</option>
+          <option>Status ao cliente</option>
+          <option>Pesquisa de NCM ou norma</option>
+          <option>Planilha ou relatório</option>
+          <option>Outra</option>
+        </select>
+      </label>
+      <label for="f-desc">O que você fez com a IA <small>Uma frase</small>
+        <textarea id="f-desc" name="descricao" maxlength="240" placeholder="Ex.: Fotografei a invoice e pedi ao Claude para comparar com o pedido."></textarea>
+      </label>
+      <div class="row">
+        <label for="f-antes">Minutos à mão
+          <input id="f-antes" name="antes" type="number" inputmode="numeric" min="1" max="600" value="40">
+        </label>
+        <label for="f-depois">Minutos com IA
+          <input id="f-depois" name="depois" type="number" inputmode="numeric" min="0" max="600" value="10">
+        </label>
+        <label for="f-vezes">Vezes por semana
+          <input id="f-vezes" name="vezes" type="number" inputmode="numeric" min="1" max="100" value="5">
+        </label>
+      </div>
+      <label for="f-ferr">Ferramenta usada
+        <select id="f-ferr" name="ferramenta">
+          <option>Claude</option><option>ChatGPT</option><option>Gemini</option><option>Outra</option>
+        </select>
+      </label>
+
+      <div class="result" aria-live="polite">
+        <div><b id="r-tarefa">30 min</b><small>economizados por vez</small></div>
+        <div><b id="r-semana">2,5 h</b><small>por semana</small></div>
+        <div><b id="r-mes">10,8 h</b><small>por mês</small></div>
+      </div>
+      <span class="level" id="r-nivel">Nível: Turbo</span>
+
+      <div class="actions">
+        <a class="btn btn-primary" id="enviar" href="#" target="_blank" rel="noopener">Enviar para o ranking</a>
+        <button class="btn btn-ghost" type="button" id="copiar">Copiar resumo</button>
+      </div>
+      <p class="note" id="enviar-nota">O botão abre o formulário com suas respostas preenchidas. Confira e toque em <b>Enviar</b> lá para entrar no ranking.</p>
+      <div class="copybox" id="resumo" hidden></div>
+    </form>
+  </section>
+
+  <section class="card" aria-labelledby="rank-title">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <h2 id="rank-title">Ranking da turma</h2>
+      <p class="muted" id="atualizado">Ordenado por horas devolvidas por mês.</p>
+    </div>
+    <div id="ranking"></div>
+    <h3 style="font-size:1.1rem">Como os pontos funcionam</h3>
+    <p class="muted" style="font-size:.92rem">Horas por mês = (minutos à mão − minutos com IA) × vezes por semana × 4,3 ÷ 60. Cada pessoa aparece com o seu melhor registro.</p>
+    <div class="levels">
+      <div><b>Iniciante</b><span class="muted">até 2 h/mês</span></div>
+      <div><b>Acelerado</b><span class="muted">de 2 a 8 h/mês</span></div>
+      <div><b>Turbo</b><span class="muted">de 8 a 20 h/mês</span></div>
+      <div><b>Mestre do Comex</b><span class="muted">mais de 20 h/mês</span></div>
+    </div>
+  </section>
+</div>
+
+<footer>Ciclo do Saber · Inteligência Artificial: Automação, Segurança e Uso Estratégico · Sindiex, Fecomércio-ES e Senac. Use dados anonimizados: não escreva nomes de clientes nem valores de contratos.</footer>
+</div>
+
+<script>
+/* Formulário do Google que recebe os registros. url = link "viewform"; fields = ids "entry.NNN" de cada pergunta (link pré-preenchido). */
+const FORM = {
+  url: "",
+  fields: { nome: "", empresa: "", tarefa: "", descricao: "", antes: "", depois: "", vezes: "", ferramenta: "" }
+};
+/* Registros recebidos pelo formulário, atualizados pelo organizador. */
+const RANKING = [];
+const ATUALIZADO_EM = "";
+
+const $ = id => document.getElementById(id);
+const fmtH = h => (Math.round(h * 10) / 10).toLocaleString('pt-BR', {maximumFractionDigits: 1}) + ' h';
+const num = (id, min, max) => { const v = parseFloat($(id).value); return isFinite(v) ? Math.min(max, Math.max(min, v)) : min; };
+function nivel(hMes){ return hMes > 20 ? 'Mestre do Comex' : hMes > 8 ? 'Turbo' : hMes >= 2 ? 'Acelerado' : 'Iniciante'; }
+function horasMes(antes, depois, vezes){ return Math.max(0, antes - depois) * vezes * 4.3 / 60; }
+
+function calc(){
+  const antes = num('f-antes', 1, 600), depois = num('f-depois', 0, 600), vezes = num('f-vezes', 1, 100);
+  const porVez = Math.max(0, antes - depois), sem = porVez * vezes / 60, mes = horasMes(antes, depois, vezes);
+  $('r-tarefa').textContent = porVez + ' min';
+  $('r-semana').textContent = fmtH(sem);
+  $('r-mes').textContent = fmtH(mes);
+  $('r-nivel').textContent = 'Nível: ' + nivel(mes);
+  const v = {nome: $('f-nome').value.trim(), empresa: $('f-empresa').value.trim(), tarefa: $('f-tarefa').value,
+    descricao: $('f-desc').value.trim(), antes, depois, vezes, ferramenta: $('f-ferr').value};
+  const resumo = `${v.nome || '(sem nome)'}${v.empresa ? ' · ' + v.empresa : ''}\nTarefa: ${v.tarefa}\nO que fiz: ${v.descricao || '-'}\nÀ mão: ${antes} min · Com IA: ${depois} min · ${vezes}x por semana\nFerramenta: ${v.ferramenta}\nEconomia: ${fmtH(mes)} por mês`;
+  $('resumo').textContent = resumo;
+  const a = $('enviar');
+  const ready = FORM.url && Object.values(FORM.fields).every(Boolean);
+  if (FORM.url) {
+    try {
+      const u = new URL(FORM.url);
+      if (ready) { u.searchParams.set('usp', 'pp_url'); for (const [k, id] of Object.entries(FORM.fields)) u.searchParams.set(id, String(v[k])); }
+      a.href = u.toString(); a.removeAttribute('aria-disabled');
+      $('enviar-nota').innerHTML = ready ? 'O botão abre o formulário com suas respostas preenchidas. Confira e toque em <b>Enviar</b> lá para entrar no ranking.'
+        : 'O botão abre o formulário. Toque em <b>Copiar resumo</b> antes, para colar as respostas.';
+    } catch (e) { a.setAttribute('aria-disabled', 'true'); }
+  } else {
+    a.href = '#'; a.setAttribute('aria-disabled', 'true');
+    $('enviar-nota').innerHTML = 'O envio abre no dia do workshop. Até lá, use a calculadora para ver quanto tempo você ganha.';
+  }
+  return v;
+}
+
+function renderRanking(){
+  const best = new Map();
+  for (const r of RANKING) {
+    const h = horasMes(+r.antes, +r.depois, +r.vezes), key = (r.nome || '').trim().toLowerCase();
+    if (!key) continue;
+    if (!best.has(key) || best.get(key).h < h) best.set(key, {...r, h});
+  }
+  const rows = [...best.values()].sort((a, b) => b.h - a.h);
+  const total = rows.reduce((s, r) => s + r.h, 0);
+  const media = RANKING.length ? RANKING.reduce((s, r) => s + Math.max(0, r.antes - r.depois), 0) / RANKING.length : 0;
+  $('t-horas').textContent = fmtH(total);
+  $('t-pessoas').textContent = RANKING.length;
+  $('t-media').textContent = Math.round(media) + ' min';
+  if (ATUALIZADO_EM) $('atualizado').textContent = 'Ordenado por horas devolvidas por mês · atualizado em ' + ATUALIZADO_EM + '.';
+  const box = $('ranking'); box.textContent = '';
+  if (!rows.length) {
+    const e = document.createElement('div'); e.className = 'empty';
+    const b = document.createElement('b'); b.textContent = 'O ranking abre depois do workshop';
+    const p = document.createElement('p'); p.className = 'muted';
+    p.textContent = 'Use a calculadora ao lado com uma tarefa real e envie. Os primeiros registros aparecem aqui assim que o ranking for atualizado.';
+    e.append(b, p); box.append(e); return;
+  }
+  const pod = document.createElement('div'); pod.className = 'podium';
+  rows.slice(0, 3).forEach((r, i) => {
+    const d = document.createElement('div'); d.className = 'place';
+    const pos = document.createElement('span'); pos.className = 'pos'; pos.textContent = (i + 1) + 'º';
+    const who = document.createElement('span'); who.className = 'who'; who.textContent = r.nome;
+    const t = document.createElement('small'); t.className = 'muted'; t.textContent = r.tarefa;
+    const h = document.createElement('span'); h.className = 'hrs'; h.textContent = fmtH(r.h) + '/mês';
+    d.append(pos, who, t, h); pod.append(d);
+  });
+  box.append(pod);
+  if (rows.length > 3) {
+    const ol = document.createElement('ol'); ol.className = 'list';
+    rows.slice(3).forEach((r, i) => {
+      const li = document.createElement('li');
+      const n = document.createElement('span'); n.className = 'n'; n.textContent = (i + 4) + 'º';
+      const t = document.createElement('span'); t.className = 't';
+      const b = document.createElement('b'); b.textContent = r.nome + (r.empresa ? ' · ' + r.empresa : '');
+      const s = document.createElement('small'); s.textContent = r.tarefa + ' · ' + nivel(r.h) + ' · ' + r.ferramenta;
+      t.append(b, s);
+      const h = document.createElement('span'); h.className = 'h'; h.textContent = fmtH(r.h);
+      li.append(n, t, h); ol.append(li);
+    });
+    box.append(ol);
+  }
+}
+
+$('calc').addEventListener('input', calc);
+$('calc').addEventListener('submit', e => e.preventDefault());
+$('copiar').addEventListener('click', async () => {
+  calc(); const box = $('resumo'); box.hidden = false;
+  try { await navigator.clipboard.writeText(box.textContent); $('copiar').textContent = 'Resumo copiado'; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents(box); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('copiar').textContent = 'Selecionado: copie'; }
+  setTimeout(() => { $('copiar').textContent = 'Copiar resumo'; }, 2500);
+});
+calc(); renderRanking();
+</script>
+
+</body></html>

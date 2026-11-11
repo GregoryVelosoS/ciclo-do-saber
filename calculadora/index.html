@@ -1,0 +1,141 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Calculadora de Custo de Importação</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: formulário à esquerda, memória de cálculo à direita no computador; empilhado no celular. Dark-first, mesma identidade da Página do Workshop. */
+:root{
+  --bg:#071a1d; --surface:#0d2529; --surface-2:#123238; --line:#1f4a50;
+  --fg:#e6f4f4; --muted:#9bbcbd; --accent:#22e0e6; --accent-ink:#04282b; --warn:#f2c94c;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f2f8f8;--surface:#fff;--surface-2:#e5f1f1;--line:#c4dcdc;--fg:#0b2a2e;--muted:#4d6c6e;--accent:#007a80;--accent-ink:#fff;--warn:#8a5b00;color-scheme:light}}
+:root[data-theme="light"]{--bg:#f2f8f8;--surface:#fff;--surface-2:#e5f1f1;--line:#c4dcdc;--fg:#0b2a2e;--muted:#4d6c6e;--accent:#007a80;--accent-ink:#fff;--warn:#8a5b00;color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{width:100%;margin:0 auto;padding-block:24px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:900px){.wrap{width:90%}}
+.eyebrow{font-weight:600;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--f-display);font-size:clamp(1.9rem,6vw,2.6rem);line-height:1.05;margin:4px 0 6px;text-wrap:balance}
+h2{font-family:var(--f-display);font-size:1.35rem;margin:0 0 8px}
+p{margin:0;max-width:70ch}
+.warn{margin-top:12px;border-left:3px solid var(--warn);padding:6px 0 6px 12px;color:var(--fg);font-size:.95rem}
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;margin-top:20px}
+@media (min-width:900px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+fieldset{border:0;padding:0;margin:0 0 14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+legend{font-weight:600;color:var(--muted);font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+label{display:flex;flex-direction:column;gap:4px;font-size:.9rem;min-width:0}
+input{font:500 1rem var(--f-mono);color:var(--fg);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
+input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:600 .95rem var(--f-body);border-radius:10px;padding:9px 14px;cursor:pointer;border:1px solid var(--accent);background:transparent;color:var(--accent)}
+button.primary{background:var(--accent);color:var(--accent-ink)}
+.total{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:12px 14px;border-radius:12px;background:var(--surface-2);margin-bottom:12px;flex-wrap:wrap}
+.total b{font-family:var(--f-display);font-size:2rem;color:var(--accent);font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+td.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td small{color:var(--muted);display:block}
+tr.sub td{font-weight:600;border-top:2px solid var(--line)}
+.foot{margin-top:14px;color:var(--muted);font-size:.85rem}
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">Ciclo do Saber · Workshop IA · Ferramenta de exemplo</div>
+  <h1>Calculadora de Custo de Importação</h1>
+  <p>Estimativa do custo nacionalizado de uma importação marítima, etapa por etapa. Vem preenchida com o processo fictício <b>IMP-101</b> (rolamentos da China).</p>
+  <p class="warn">Alíquotas, câmbio e despesas abaixo são <b>valores de exemplo</b>. Antes de usar num processo real, confira a NCM e as alíquotas na TEC e no Portal Único Siscomex, e o ICMS e benefícios do seu estado. Cálculo simplificado, sem regimes especiais.</p>
+
+  <div class="grid">
+    <form class="panel" id="f" autocomplete="off">
+      <fieldset>
+        <legend>Mercadoria e transporte (em moeda estrangeira)</legend>
+        <label>Valor FOB<input id="fob" inputmode="decimal" value="14540"></label>
+        <label>Frete internacional<input id="frete" inputmode="decimal" value="2100"></label>
+        <label>Seguro internacional<input id="seguro" inputmode="decimal" value="80"></label>
+        <label>Taxa de câmbio (R$)<input id="cambio" inputmode="decimal" value="5,40"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Alíquotas (%)</legend>
+        <label>II<input id="ii" inputmode="decimal" value="14"></label>
+        <label>IPI<input id="ipi" inputmode="decimal" value="5"></label>
+        <label>PIS-Importação<input id="pis" inputmode="decimal" value="2,1"></label>
+        <label>Cofins-Importação<input id="cofins" inputmode="decimal" value="9,65"></label>
+        <label>ICMS<input id="icms" inputmode="decimal" value="17"></label>
+        <label>AFRMM (sobre o frete)<input id="afrmm" inputmode="decimal" value="8"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Despesas no Brasil (R$)</legend>
+        <label>Taxa Siscomex<input id="siscomex" inputmode="decimal" value="185"></label>
+        <label>Despesas aduaneiras<input id="adu" inputmode="decimal" value="1500"></label>
+        <label>Armazenagem e porto<input id="arm" inputmode="decimal" value="3200"></label>
+        <label>Despachante e trading<input id="serv" inputmode="decimal" value="2800"></label>
+      </fieldset>
+      <div class="btns">
+        <button type="button" class="primary" id="ex">Recarregar exemplo IMP-101</button>
+        <button type="button" id="zero">Limpar valores</button>
+      </div>
+    </form>
+
+    <section class="panel" aria-live="polite">
+      <h2>Memória de cálculo</h2>
+      <div class="total"><span>Custo total estimado</span><b id="tot">—</b></div>
+      <div class="tbl"><table><tbody id="rows"></tbody></table></div>
+      <p class="foot" id="ratio"></p>
+    </section>
+  </div>
+  <p class="foot">Ordem simplificada: valor aduaneiro (FOB + frete + seguro) → II → IPI sobre (valor aduaneiro + II) → PIS e Cofins sobre o valor aduaneiro → AFRMM sobre o frete → ICMS "por dentro" sobre a soma de tudo que entra na base. Material didático; não substitui a análise de um profissional.</p>
+</div>
+
+<script>
+(function(){
+  var ids=["fob","frete","seguro","cambio","ii","ipi","pis","cofins","icms","afrmm","siscomex","adu","arm","serv"];
+  var ex={fob:"14540",frete:"2100",seguro:"80",cambio:"5,40",ii:"14",ipi:"5",pis:"2,1",cofins:"9,65",icms:"17",afrmm:"8",siscomex:"185",adu:"1500",arm:"3200",serv:"2800"};
+  function num(id){var v=(document.getElementById(id).value||"").trim().replace(/\./g,"").replace(",",".");var n=parseFloat(v);return isFinite(n)?n:0;}
+  var brl=new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"});
+  function row(label,hint,val,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+label+(hint?'<small>'+hint+'</small>':'')+'</td><td class="n">'+brl.format(val)+'</td></tr>';}
+  function calc(){
+    var c=num("cambio"), fob=num("fob")*c, fr=num("frete")*c, sg=num("seguro")*c;
+    var va=fob+fr+sg;
+    var ii=va*num("ii")/100, ipi=(va+ii)*num("ipi")/100, pis=va*num("pis")/100, cof=va*num("cofins")/100;
+    var afr=fr*num("afrmm")/100, sis=num("siscomex"), adu=num("adu");
+    var t=num("icms")/100;
+    var baseSemIcms=va+ii+ipi+pis+cof+afr+sis+adu;
+    var icms=t<1?baseSemIcms/(1-t)*t:0;
+    var arm=num("arm"), serv=num("serv");
+    var total=baseSemIcms+icms+arm+serv;
+    var trib=ii+ipi+pis+cof+icms+afr+sis;
+    var h="";
+    h+=row("Mercadoria (FOB)","convertida pela taxa de câmbio",fob);
+    h+=row("Frete internacional","",fr);
+    h+=row("Seguro internacional","",sg);
+    h+=row("Valor aduaneiro","base dos tributos federais",va,"sub");
+    h+=row("II","valor aduaneiro × "+num("ii")+"%",ii);
+    h+=row("IPI","(valor aduaneiro + II) × "+num("ipi")+"%",ipi);
+    h+=row("PIS-Importação","valor aduaneiro × "+num("pis")+"%",pis);
+    h+=row("Cofins-Importação","valor aduaneiro × "+num("cofins")+"%",cof);
+    h+=row("AFRMM","frete × "+num("afrmm")+"%",afr);
+    h+=row("Taxa Siscomex","",sis);
+    h+=row("Despesas aduaneiras","",adu);
+    h+=row("ICMS","calculado \"por dentro\" a "+num("icms")+"%",icms);
+    h+=row("Armazenagem e porto","",arm);
+    h+=row("Despachante e trading","",serv);
+    h+=row("Custo total estimado","",total,"sub");
+    document.getElementById("rows").innerHTML=h;
+    document.getElementById("tot").textContent=brl.format(total);
+    document.getElementById("ratio").textContent= fob>0 ? "O custo total é "+(total/fob).toLocaleString("pt-BR",{maximumFractionDigits:2})+" vezes o valor FOB. Tributos e taxas somam "+brl.format(trib)+"." : "";
+  }
+  ids.forEach(function(id){document.getElementById(id).addEventListener("input",calc);});
+  document.getElementById("ex").addEventListener("click",function(){ids.forEach(function(id){document.getElementById(id).value=ex[id];});calc();});
+  document.getElementById("zero").addEventListener("click",function(){ids.forEach(function(id){document.getElementById(id).value="";});calc();});
+  document.getElementById("f").addEventListener("submit",function(e){e.preventDefault();});
+  calc();
+})();
+</script>
+
+</body></html>

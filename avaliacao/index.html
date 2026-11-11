@@ -1,0 +1,195 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Avaliação do Workshop IA</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: uma coluna estreita, como uma ficha de avaliação; cada tópico com uma escala de 1 a 5 em botões grandes para o polegar. */
+:root{
+  --bg:#F2F2F2; --surface:#FFFFFF; --surface-2:#E4EDEC; --line:#D3DEDC;
+  --fg:#000D0C; --muted:#4E6A68; --accent:#025951; --glow:#07F2DB; --on-glow:#000D0C; --pick:#012626; --on-pick:#F2F2F2;
+  --f-display:"Space Grotesk","Inter",system-ui,sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#000D0C; --surface:#012626; --surface-2:#023B37; --line:#0E4744;
+  --fg:#F2F2F2; --muted:#9DBAB6; --accent:#07F2DB; --glow:#07F2DB; --on-glow:#000D0C; --pick:#07F2DB; --on-pick:#000D0C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000D0C; --surface:#012626; --surface-2:#023B37; --line:#0E4744;
+  --fg:#F2F2F2; --muted:#9DBAB6; --accent:#07F2DB; --glow:#07F2DB; --on-glow:#000D0C; --pick:#07F2DB; --on-pick:#000D0C; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+p{margin:0}
+.eyebrow{font-size:.78rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--muted)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header{padding-block:32px 20px;display:flex;flex-direction:column;gap:10px}
+header h1{font-size:clamp(2rem,6vw,2.8rem);letter-spacing:-.02em}
+.scale-key{display:flex;justify-content:space-between;gap:8px;font-size:.82rem;color:var(--muted)}
+
+form{display:flex;flex-direction:column;gap:12px;padding-bottom:16px}
+fieldset{border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:16px;margin:0;display:flex;flex-direction:column;gap:12px;min-width:0}
+legend{float:left;width:100%;padding:0;display:flex;flex-direction:column;gap:2px}
+legend b{font-family:var(--f-display);font-size:1.12rem}
+legend small{color:var(--muted);font-size:.86rem}
+.stars{clear:both;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.stars input{position:absolute;opacity:0;pointer-events:none}
+.stars label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;font-family:var(--f-display);font-weight:700;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.stars label small{font-family:var(--f-body);font-weight:500;font-size:.68rem;color:var(--muted)}
+.stars input:checked + label{background:var(--pick);color:var(--on-pick);border-color:var(--pick)}
+.stars input:checked + label small{color:inherit;opacity:.85}
+.stars input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
+.group-title{font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-top:10px}
+textarea,input[type=text]{font:inherit;font-size:1rem;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:96px}
+textarea:focus,input[type=text]:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.field{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:.92rem}
+.field small{font-weight:400;color:var(--muted)}
+
+.send{position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px}
+.send .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.progress{font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;justify-content:center;font:inherit;font-weight:700;text-decoration:none;border-radius:12px;padding:12px 20px;border:0;cursor:pointer}
+.btn-primary{background:var(--glow);color:var(--on-glow)}
+.btn-ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn[aria-disabled="true"]{opacity:.5;pointer-events:none}
+.note{font-size:.85rem;color:var(--muted)}
+.copybox{font-size:.88rem;background:var(--surface-2);border-radius:10px;padding:10px 12px;white-space:pre-wrap;word-break:break-word}
+footer{color:var(--muted);font-size:.85rem;padding-block:16px 32px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Ciclo do Saber · Avaliação</div>
+  <h1>Como foi o workshop para você?</h1>
+  <p class="muted">Dê uma nota de 1 a 5 em cada tópico e, se quiser, deixe uma dica ou sugestão. Leva cerca de dois minutos e ajuda a melhorar as próximas edições.</p>
+  <div class="scale-key"><span>1 · Ruim</span><span>3 · Regular</span><span>5 · Excelente</span></div>
+</header>
+
+<form id="aval" novalidate>
+  <p class="group-title">Conteúdo</p>
+  <div id="topicos-conteudo"></div>
+  <p class="group-title">Formato</p>
+  <div id="topicos-formato" style="display:flex;flex-direction:column;gap:12px"></div>
+  <p class="group-title">Geral</p>
+  <div id="topicos-geral"></div>
+
+  <fieldset>
+    <legend><b>Dicas e sugestões</b><small>O que faltou, o que sobrou, o que você mudaria</small></legend>
+    <label class="field" for="f-sugestoes" style="clear:both">
+      <textarea id="f-sugestoes" maxlength="1500" placeholder="Ex.: mais exemplos de exportação; um exercício com planilha."></textarea>
+    </label>
+  </fieldset>
+  <fieldset>
+    <legend><b>Comentário geral</b><small>Opcional</small></legend>
+    <label class="field" for="f-comentario" style="clear:both">
+      <textarea id="f-comentario" maxlength="1500" placeholder="Conte como foi a sua experiência."></textarea>
+    </label>
+    <label class="field" for="f-nome">Nome <small>Opcional · deixe em branco para responder anonimamente</small>
+      <input type="text" id="f-nome" maxlength="60" autocomplete="name">
+    </label>
+  </fieldset>
+
+  <div class="send">
+    <div class="bar">
+      <span class="progress" id="progresso">0 de 9 tópicos avaliados</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost" type="button" id="copiar">Copiar respostas</button>
+        <a class="btn btn-primary" id="enviar" href="#" target="_blank" rel="noopener">Enviar avaliação</a>
+      </div>
+    </div>
+    <p class="note" id="nota">O botão abre o formulário com suas notas preenchidas. Confira e toque em <b>Enviar</b> lá para concluir.</p>
+    <div class="copybox" id="resumo" hidden></div>
+  </div>
+</form>
+
+<footer>Workshop Inteligência Artificial: Automação, Segurança e Uso Estratégico · 12 de novembro de 2026 · Sindiex, Fecomércio-ES e Senac.</footer>
+</div>
+
+<script>
+/* Formulário do Google que recebe as avaliações. url = link "viewform"; fields = ids "entry.NNN" de cada pergunta (link pré-preenchido). */
+const FORM = { url: "", fields: {} };
+
+const TOPICOS = [
+  {id:'m1', grupo:'conteudo', t:'Como a IA funciona', d:'Módulo 1: conceitos, contexto, alucinação e ética'},
+  {id:'m2', grupo:'conteudo', t:'Conhecendo o Claude', d:'Módulo 2: planos, onde usar, voz'},
+  {id:'m3', grupo:'conteudo', t:'Engenharia de prompt', d:'Módulo 3: texto, foto e voz'},
+  {id:'m4', grupo:'conteudo', t:'Segurança', d:'Módulo 4: golpes, deepfakes e sigilo dos dados'},
+  {id:'m5', grupo:'conteudo', t:'Do prompt à ferramenta', d:'Módulo 5: projetos, artefatos, skills e rotinas'},
+  {id:'instrutor', grupo:'formato', t:'Didática do instrutor', d:'Clareza e ritmo das explicações'},
+  {id:'pratica', grupo:'formato', t:'Exercícios no celular', d:'Atividades práticas e Página do Participante'},
+  {id:'utilidade', grupo:'formato', t:'Aplicação no seu trabalho', d:'Quanto você vai usar o que viu'},
+  {id:'geral', grupo:'geral', t:'Avaliação geral', d:'Sua nota para o workshop como um todo'},
+];
+const ROTULO = ['', 'Ruim', 'Fraco', 'Regular', 'Bom', 'Ótimo'];
+const $ = id => document.getElementById(id);
+
+for (const tp of TOPICOS) {
+  const fs = document.createElement('fieldset');
+  const lg = document.createElement('legend');
+  const b = document.createElement('b'); b.textContent = tp.t;
+  const s = document.createElement('small'); s.textContent = tp.d;
+  lg.append(b, s);
+  const st = document.createElement('div'); st.className = 'stars'; st.setAttribute('role', 'radiogroup');
+  for (let n = 1; n <= 5; n++) {
+    const id = `r-${tp.id}-${n}`;
+    const inp = document.createElement('input'); inp.type = 'radio'; inp.name = tp.id; inp.value = n; inp.id = id;
+    const lb = document.createElement('label'); lb.htmlFor = id; lb.textContent = n;
+    const sm = document.createElement('small'); sm.textContent = ROTULO[n]; lb.append(sm);
+    st.append(inp, lb);
+  }
+  fs.append(lg, st);
+  $('topicos-' + tp.grupo).append(fs);
+}
+$('topicos-conteudo').style.cssText = 'display:flex;flex-direction:column;gap:12px';
+$('topicos-geral').style.cssText = 'display:flex;flex-direction:column;gap:12px';
+
+function valores(){
+  const v = {};
+  for (const tp of TOPICOS) { const c = document.querySelector(`input[name="${tp.id}"]:checked`); v[tp.id] = c ? c.value : ''; }
+  v.sugestoes = $('f-sugestoes').value.trim(); v.comentario = $('f-comentario').value.trim(); v.nome = $('f-nome').value.trim();
+  return v;
+}
+function atualizar(){
+  const v = valores();
+  const feitos = TOPICOS.filter(tp => v[tp.id]).length;
+  $('progresso').textContent = `${feitos} de ${TOPICOS.length} tópicos avaliados`;
+  const linhas = TOPICOS.map(tp => `${tp.t}: ${v[tp.id] || '-'}`);
+  if (v.sugestoes) linhas.push('Dicas e sugestões: ' + v.sugestoes);
+  if (v.comentario) linhas.push('Comentário: ' + v.comentario);
+  if (v.nome) linhas.push('Nome: ' + v.nome);
+  $('resumo').textContent = linhas.join('\n');
+  const a = $('enviar');
+  const keys = [...TOPICOS.map(t => t.id), 'sugestoes', 'comentario', 'nome'];
+  const ready = FORM.url && keys.every(k => FORM.fields[k]);
+  if (!FORM.url) {
+    a.href = '#'; a.setAttribute('aria-disabled', 'true');
+    $('nota').textContent = 'O envio abre ao fim do workshop. Até lá, você já pode marcar suas notas.';
+    return;
+  }
+  try {
+    const u = new URL(FORM.url);
+    if (ready) { u.searchParams.set('usp', 'pp_url'); for (const k of keys) if (v[k]) u.searchParams.set(FORM.fields[k], v[k]); }
+    a.href = u.toString(); a.removeAttribute('aria-disabled');
+    $('nota').innerHTML = ready ? 'O botão abre o formulário com suas notas preenchidas. Confira e toque em <b>Enviar</b> lá para concluir.'
+      : 'O botão abre o formulário. Toque em <b>Copiar respostas</b> antes, para colar lá.';
+  } catch (e) { a.setAttribute('aria-disabled', 'true'); }
+}
+$('aval').addEventListener('input', atualizar);
+$('aval').addEventListener('change', atualizar);
+$('aval').addEventListener('submit', e => e.preventDefault());
+$('copiar').addEventListener('click', async () => {
+  atualizar(); const box = $('resumo'); box.hidden = false;
+  try { await navigator.clipboard.writeText(box.textContent); $('copiar').textContent = 'Respostas copiadas'; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents(box); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('copiar').textContent = 'Selecionado: copie'; }
+  setTimeout(() => { $('copiar').textContent = 'Copiar respostas'; }, 2500);
+});
+atualizar();
+</script>
+
+</body></html>
