@@ -154,10 +154,10 @@ footer{border-top:1px solid var(--line);padding-block:20px 32px;color:var(--mute
       <span class="level" id="r-nivel">Nível: Turbo</span>
 
       <div class="actions">
-        <a class="btn btn-primary" id="enviar" href="#" target="_blank" rel="noopener">Enviar para o ranking</a>
+        <button class="btn btn-primary" type="submit" id="enviar">Enviar para o ranking</button>
         <button class="btn btn-ghost" type="button" id="copiar">Copiar resumo</button>
       </div>
-      <p class="note" id="enviar-nota">O botão abre o formulário com suas respostas preenchidas. Confira e toque em <b>Enviar</b> lá para entrar no ranking.</p>
+      <p class="note" id="enviar-nota" aria-live="polite">Preencha como quer aparecer e toque em <b>Enviar para o ranking</b>. Seu registro entra na lista abaixo na hora.</p>
       <div class="copybox" id="resumo" hidden></div>
     </form>
   </section>
@@ -183,14 +183,9 @@ footer{border-top:1px solid var(--line);padding-block:20px 32px;color:var(--mute
 </div>
 
 <script>
-/* Formulário do Google que recebe os registros. url = link "viewform"; fields = ids "entry.NNN" de cada pergunta (link pré-preenchido). */
-const FORM = {
-  url: "",
-  fields: { nome: "", empresa: "", tarefa: "", descricao: "", antes: "", depois: "", vezes: "", ferramenta: "" }
-};
-/* Registros recebidos pelo formulário, atualizados pelo organizador. */
-const RANKING = [];
-const ATUALIZADO_EM = "";
+/* Endereço do App da Web (Google Apps Script) que grava na planilha "Ciclo do Saber – respostas". */
+const API = "";
+let RANKING = [];
 
 const $ = id => document.getElementById(id);
 const fmtH = h => (Math.round(h * 10) / 10).toLocaleString('pt-BR', {maximumFractionDigits: 1}) + ' h';
@@ -209,20 +204,6 @@ function calc(){
     descricao: $('f-desc').value.trim(), antes, depois, vezes, ferramenta: $('f-ferr').value};
   const resumo = `${v.nome || '(sem nome)'}${v.empresa ? ' · ' + v.empresa : ''}\nTarefa: ${v.tarefa}\nO que fiz: ${v.descricao || '-'}\nÀ mão: ${antes} min · Com IA: ${depois} min · ${vezes}x por semana\nFerramenta: ${v.ferramenta}\nEconomia: ${fmtH(mes)} por mês`;
   $('resumo').textContent = resumo;
-  const a = $('enviar');
-  const ready = FORM.url && Object.values(FORM.fields).every(Boolean);
-  if (FORM.url) {
-    try {
-      const u = new URL(FORM.url);
-      if (ready) { u.searchParams.set('usp', 'pp_url'); for (const [k, id] of Object.entries(FORM.fields)) u.searchParams.set(id, String(v[k])); }
-      a.href = u.toString(); a.removeAttribute('aria-disabled');
-      $('enviar-nota').innerHTML = ready ? 'O botão abre o formulário com suas respostas preenchidas. Confira e toque em <b>Enviar</b> lá para entrar no ranking.'
-        : 'O botão abre o formulário. Toque em <b>Copiar resumo</b> antes, para colar as respostas.';
-    } catch (e) { a.setAttribute('aria-disabled', 'true'); }
-  } else {
-    a.href = '#'; a.setAttribute('aria-disabled', 'true');
-    $('enviar-nota').innerHTML = 'O envio abre no dia do workshop. Até lá, use a calculadora para ver quanto tempo você ganha.';
-  }
   return v;
 }
 
@@ -239,13 +220,12 @@ function renderRanking(){
   $('t-horas').textContent = fmtH(total);
   $('t-pessoas').textContent = RANKING.length;
   $('t-media').textContent = Math.round(media) + ' min';
-  if (ATUALIZADO_EM) $('atualizado').textContent = 'Ordenado por horas devolvidas por mês · atualizado em ' + ATUALIZADO_EM + '.';
   const box = $('ranking'); box.textContent = '';
   if (!rows.length) {
     const e = document.createElement('div'); e.className = 'empty';
-    const b = document.createElement('b'); b.textContent = 'O ranking abre depois do workshop';
+    const b = document.createElement('b'); b.textContent = 'Ainda não há registros';
     const p = document.createElement('p'); p.className = 'muted';
-    p.textContent = 'Use a calculadora ao lado com uma tarefa real e envie. Os primeiros registros aparecem aqui assim que o ranking for atualizado.';
+    p.textContent = 'Use a calculadora com uma tarefa real e envie. Seu registro aparece aqui na hora.';
     e.append(b, p); box.append(e); return;
   }
   const pod = document.createElement('div'); pod.className = 'podium';
@@ -275,14 +255,52 @@ function renderRanking(){
 }
 
 $('calc').addEventListener('input', calc);
-$('calc').addEventListener('submit', e => e.preventDefault());
+$('calc').addEventListener('submit', enviar);
+
+function nota(html){ $('enviar-nota').innerHTML = html; }
+
+async function enviar(e){
+  e.preventDefault();
+  const v = calc();
+  if (!API) { nota('O envio ainda não está ativo. Use <b>Copiar resumo</b> e mande para o instrutor.'); return; }
+  if (!v.nome) { nota('Escreva como quer aparecer no ranking (nome ou apelido) antes de enviar.'); $('f-nome').focus(); return; }
+  if (v.depois >= v.antes) { nota('Os minutos com IA precisam ser menores que os minutos à mão.'); $('f-depois').focus(); return; }
+  const btn = $('enviar'); btn.disabled = true; btn.setAttribute('aria-disabled', 'true'); btn.textContent = 'Enviando...';
+  try {
+    const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ tipo: 'ranking', ...v }) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.erro || 'falha');
+    nota('<b>Pronto, você está no ranking!</b> Pode enviar outra tarefa: vale o seu melhor registro.');
+    btn.textContent = 'Enviado';
+    carregarRanking();
+    setTimeout(() => { btn.disabled = false; btn.removeAttribute('aria-disabled'); btn.textContent = 'Enviar outra tarefa'; }, 2500);
+  } catch (err) {
+    nota('Não consegui enviar agora. Confira a internet e tente de novo, ou use <b>Copiar resumo</b> e mande para o instrutor.');
+    btn.disabled = false; btn.removeAttribute('aria-disabled'); btn.textContent = 'Enviar para o ranking';
+  }
+}
+
+async function carregarRanking(){
+  if (!API) return;
+  try {
+    const r = await fetch(API + '?t=' + Date.now());
+    const j = await r.json();
+    if (Array.isArray(j.rows)) {
+      RANKING = j.rows.map(x => ({...x, antes: +x.antes, depois: +x.depois, vezes: +x.vezes}));
+      renderRanking();
+      const hora = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+      $('atualizado').textContent = 'Ordenado por horas devolvidas por mês · ao vivo, atualizado às ' + hora + '.';
+    }
+  } catch (e) { /* mantém o que já está na tela */ }
+}
 $('copiar').addEventListener('click', async () => {
   calc(); const box = $('resumo'); box.hidden = false;
   try { await navigator.clipboard.writeText(box.textContent); $('copiar').textContent = 'Resumo copiado'; }
   catch (e) { const r = document.createRange(); r.selectNodeContents(box); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('copiar').textContent = 'Selecionado: copie'; }
   setTimeout(() => { $('copiar').textContent = 'Copiar resumo'; }, 2500);
 });
-calc(); renderRanking();
+calc(); renderRanking(); carregarRanking();
+setInterval(carregarRanking, 60000);
 </script>
 
 </body></html>

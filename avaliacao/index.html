@@ -100,10 +100,10 @@ footer{color:var(--muted);font-size:.85rem;padding-block:16px 32px}
       <span class="progress" id="progresso">0 de 9 tópicos avaliados</span>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-ghost" type="button" id="copiar">Copiar respostas</button>
-        <a class="btn btn-primary" id="enviar" href="#" target="_blank" rel="noopener">Enviar avaliação</a>
+        <button class="btn btn-primary" type="submit" id="enviar">Enviar avaliação</button>
       </div>
     </div>
-    <p class="note" id="nota">O botão abre o formulário com suas notas preenchidas. Confira e toque em <b>Enviar</b> lá para concluir.</p>
+    <p class="note" id="nota" aria-live="polite">Marque as notas e toque em <b>Enviar avaliação</b>. Só o organizador vê as respostas.</p>
     <div class="copybox" id="resumo" hidden></div>
   </div>
 </form>
@@ -112,8 +112,9 @@ footer{color:var(--muted);font-size:.85rem;padding-block:16px 32px}
 </div>
 
 <script>
-/* Formulário do Google que recebe as avaliações. url = link "viewform"; fields = ids "entry.NNN" de cada pergunta (link pré-preenchido). */
-const FORM = { url: "", fields: {} };
+/* Endereço do App da Web (Google Apps Script) que grava na planilha "Ciclo do Saber – respostas". */
+const API = "";
+let enviado = false;
 
 const TOPICOS = [
   {id:'m1', grupo:'conteudo', t:'Como a IA funciona', d:'Módulo 1: conceitos, contexto, alucinação e ética'},
@@ -164,25 +165,33 @@ function atualizar(){
   if (v.comentario) linhas.push('Comentário: ' + v.comentario);
   if (v.nome) linhas.push('Nome: ' + v.nome);
   $('resumo').textContent = linhas.join('\n');
-  const a = $('enviar');
-  const keys = [...TOPICOS.map(t => t.id), 'sugestoes', 'comentario', 'nome'];
-  const ready = FORM.url && keys.every(k => FORM.fields[k]);
-  if (!FORM.url) {
-    a.href = '#'; a.setAttribute('aria-disabled', 'true');
-    $('nota').textContent = 'O envio abre ao fim do workshop. Até lá, você já pode marcar suas notas.';
-    return;
-  }
-  try {
-    const u = new URL(FORM.url);
-    if (ready) { u.searchParams.set('usp', 'pp_url'); for (const k of keys) if (v[k]) u.searchParams.set(FORM.fields[k], v[k]); }
-    a.href = u.toString(); a.removeAttribute('aria-disabled');
-    $('nota').innerHTML = ready ? 'O botão abre o formulário com suas notas preenchidas. Confira e toque em <b>Enviar</b> lá para concluir.'
-      : 'O botão abre o formulário. Toque em <b>Copiar respostas</b> antes, para colar lá.';
-  } catch (e) { a.setAttribute('aria-disabled', 'true'); }
+  return v;
 }
 $('aval').addEventListener('input', atualizar);
 $('aval').addEventListener('change', atualizar);
-$('aval').addEventListener('submit', e => e.preventDefault());
+$('aval').addEventListener('submit', enviar);
+
+async function enviar(e){
+  e.preventDefault();
+  const v = atualizar();
+  const nota = $('nota');
+  if (!API) { nota.innerHTML = 'O envio ainda não está ativo. Use <b>Copiar respostas</b> e mande para o instrutor.'; return; }
+  if (enviado) { nota.innerHTML = '<b>Sua avaliação já foi enviada.</b> Obrigado!'; return; }
+  const faltam = TOPICOS.filter(tp => !v[tp.id]).length;
+  if (faltam === TOPICOS.length && !v.sugestoes && !v.comentario) { nota.textContent = 'Marque pelo menos uma nota antes de enviar.'; return; }
+  const btn = $('enviar'); btn.disabled = true; btn.setAttribute('aria-disabled', 'true'); btn.textContent = 'Enviando...';
+  try {
+    const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ tipo: 'avaliacao', ...v }) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.erro || 'falha');
+    enviado = true;
+    btn.textContent = 'Avaliação enviada';
+    nota.innerHTML = '<b>Obrigado! Sua avaliação foi registrada.</b> Ela ajuda a melhorar as próximas edições.';
+  } catch (err) {
+    nota.innerHTML = 'Não consegui enviar agora. Confira a internet e tente de novo, ou use <b>Copiar respostas</b> e mande para o instrutor.';
+    btn.disabled = false; btn.removeAttribute('aria-disabled'); btn.textContent = 'Enviar avaliação';
+  }
+}
 $('copiar').addEventListener('click', async () => {
   atualizar(); const box = $('resumo'); box.hidden = false;
   try { await navigator.clipboard.writeText(box.textContent); $('copiar').textContent = 'Respostas copiadas'; }
